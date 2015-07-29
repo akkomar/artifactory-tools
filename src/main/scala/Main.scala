@@ -6,7 +6,7 @@ object Main extends App {
 
   import java.time.{ZoneOffset, LocalDateTime, LocalDate}
   import scalaj.http._
-  val date = LocalDate.of(2015,6,28).atStartOfDay().toEpochSecond(ZoneOffset.ofTotalSeconds(0)) * 1000
+  val date = LocalDate.of(2015,7,12).atStartOfDay().toEpochSecond(ZoneOffset.ofTotalSeconds(0)) * 1000
 
   val conf = ConfigFactory.load()
 
@@ -16,7 +16,7 @@ object Main extends App {
 
   private val apiUser: String = conf.getString("artifactory.apiUser")
   private val apiPassword: String = conf.getString("artifactory.apiPassword")
-  val response: HttpResponse[String] = Http(s"$artifactoryUrl/api/search/creation?from=1&to=$date&repos=ext-snapshot-local").option(HttpOptions.connTimeout(1000)).option(HttpOptions.readTimeout(5000)).auth(apiUser,apiPassword).asString
+  val response: HttpResponse[String] = Http(s"$artifactoryUrl/api/search/creation?from=1&to=$date&repos=ext-snapshot-local").option(HttpOptions.connTimeout(1000)).option(HttpOptions.readTimeout(10000)).auth(apiUser,apiPassword).asString
 //  response.body
 //  response.code
 //  response.headers
@@ -26,9 +26,9 @@ object Main extends App {
 //  println(artifactUrls)
   println(artifactUrls.size)
 
-  artifactUrls.foreach{artifactUrl=>
+  artifactUrls.par.foreach{artifactUrl=>
     val artifact = artifactUrl.split("storage").last
-    val res = Http(s"$artifactoryUrl/$artifact").option(HttpOptions.connTimeout(1000)).option(HttpOptions.readTimeout(5000)).method("DELETE").auth(apiUser,apiPassword).asString
+    val res = Http(s"$artifactoryUrl/$artifact").option(HttpOptions.connTimeout(5000)).option(HttpOptions.readTimeout(10000)).method("DELETE").auth(apiUser,apiPassword).asString
     println(res)
   }
 }
